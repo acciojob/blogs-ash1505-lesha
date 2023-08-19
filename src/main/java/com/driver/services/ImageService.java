@@ -15,22 +15,17 @@ public class ImageService {
     @Autowired
     ImageRepository imageRepository2;
 
-    public Image addImage(Integer blogId, String description, String dimensions){
+    public Image addImage(Integer blogId, String description, String dimensions) {
         //add an image to the blog
-        Image image = new Image();
-        image.setDescription(description);
-        image.setDimensions(dimensions);
-
+//        if(!blogRepository2.findById(blogId).isPresent()) {
+//            throw new Exception();
+//        }
         Blog blog = blogRepository2.findById(blogId).get();
-        image.setBlog(blog);
-
-        // add list to blog
+        Image image = new Image(blog,description,dimensions);
         blog.getImageList().add(image);
-//        List<Image> imageList = blog.getImageList();
-//        imageList.add(image);
-
         blogRepository2.save(blog);
         return image;
+        //Here I am not explicitly adding image in image-repository because due to cascading effect
     }
 
     public void deleteImage(Integer id){
@@ -39,44 +34,28 @@ public class ImageService {
 
     public int countImagesInScreen(Integer id, String screenDimensions) {
         //Find the number of images of given dimensions that can fit in a screen having `screenDimensions`
-
-        //4X4 = 4/2*4/2 == 2*2== 4 images
+        String [] scrarray = screenDimensions.split("X"); //A=Length   X    B=Breadth
+//        if(!imageRepository2.findById(id).isPresent()){
+//            throw new Exception();
+//        }
         Image image = imageRepository2.findById(id).get();
 
         String imageDimensions = image.getDimensions();
-        //image dimension is in String format ex: 2X2
-        //we have to convert it into integer like 2*2=4
-        //below is the process to calculate image dimension as width and height
+        String [] imgarray = imageDimensions.split("X");
 
-        int indexOfX = imageDimensions.indexOf('X');
+        int scrl = Integer.parseInt(scrarray[0]); //A -- > integer
+        int scrb = Integer.parseInt(scrarray[1]); //B -- > integer
 
-        String x = imageDimensions.substring(0,indexOfX);
-        String y = imageDimensions.substring(indexOfX+1);
+        int imgl = Integer.parseInt(imgarray[0]); //A -- > integer
+        int imgb = Integer.parseInt(imgarray[1]); //B -- > integer
 
-        int imageWidth = Integer.parseInt(x);
-        int imageHeight= Integer.parseInt(y);
+        return no_Images(scrl,scrb,imgl,imgb);
 
+    }
 
-        //Like above, Similarly find screen dimension in integer format
-
-        int screenIndexOfX = screenDimensions.indexOf('X');
-
-        String screenX = screenDimensions.substring(0,screenIndexOfX);
-        String screenY = screenDimensions.substring(screenIndexOfX+1);
-
-        int screenWidth = Integer.parseInt(screenX);
-        int screenHeight = Integer.parseInt(screenY);
-
-        //THIS COMMENTED LOGIC IS NOT WORKING DON'T KNOW WHY. ASK IN DOUBT
-        // int totalImageDimension = imageWidth * imageHeight;
-        // int totalScreenDimension = screenWidth * screenHeight;
-        // int count = totalScreenDimension/totalImageDimension;
-
-
-        // Final count
-        int count = (screenWidth/imageWidth) * (screenHeight/imageHeight);
-
-        return count;
-
+    private int no_Images(int scrl, int scrb, int imgl, int imgb) {
+        int lenC = scrl/imgl; //
+        int lenB = scrb/imgb;
+        return lenC*lenB;
     }
 }
